@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}后台管理系统{% endblock %}
+{% block content %}
+{{nav.top.render()}}
+    {% for i in data %}
+        {% if i.state == '处理中' %}
+            <h3>还有{{ i.schedule }}%进度完成还有{{ i.error }}</h3>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+{% block scripts %}
+{% endblock %}

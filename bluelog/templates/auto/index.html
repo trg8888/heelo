@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}后台管理系统{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+  <!-- ... -->
+</div>
+{% endblock %}
+
+{% block content %}
+    {{ form.csrf_token }}
+<div class="container">
+<div class="alert alert-info" id="error" hidden>''</div>
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-info">{{ message }}</div>
+{% endfor %}
+<div class="page-header " >
+  <h1>后台登陆<small>仅供内部使用</small></h1>
+</div>
+<div class="form-group container input-group-lg">
+    <label for="usr">用户名:</label>
+    <input type="text" class="form-control" id="usr" value="">
+    <label for="pwd">密码:</label>
+    <input type="password" class="form-control" id="pwd" value="">
+</div>
+<div class="container text-center" >
+    <button type="button" class="btn btn-success btn-lg" id="login">登陆</button>
+    <button type="button" class="btn btn-warning btn-lg" id="application">注册</button>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+    document.getElementById("login").addEventListener("click",displayDate);
+    function displayDate() {
+        const csrf_token = document.getElementById('csrf_token').value
+        const usr = document.getElementById('usr').value
+        const pwd = document.getElementById('pwd').value
+        if (usr !== '' && pwd !== ''){
+            $.ajax({
+                url:"/",
+                type:"post",
+                data : {username: usr, password: pwd, csrf_token:csrf_token},
+                dataType:'json',
+                success: function (data) {
+                    const code = data['code']
+                    if (code === '200'){
+                        document.getElementById('error').hidden = true
+                        window.location.replace(getQueryVariable('next'))
+
+                    }else{
+                        document.getElementById('error').textContent = '账号或密码错误'
+                        document.getElementById('error').hidden = false
+                    }
+                },
+                error: function (error){
+                        document.getElementById('error').textContent = '页面失效请重新刷新页面'
+                        document.getElementById('error').hidden = false
+                }
+                }
+            )
+        }else{
+            alert('请不要输入空值')
+        }
+    }
+    document.getElementById('application').addEventListener("click",applicationname);
+    function applicationname() {
+        window.location.replace("/application")
+    }
+    function getQueryVariable(variable){
+               var query = window.location.search.substring(1);
+               var vars = query.split("&");
+               for (var i=0;i<vars.length;i++) {
+                       var pair = vars[i].split("=");
+                       if(pair[0] == variable){return '/'+pair[1];}
+               }
+               return('/auto_manage/');
+    }
+    </script>
+{% endblock %}

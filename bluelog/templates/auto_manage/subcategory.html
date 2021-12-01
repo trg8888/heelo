@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% from 'macors.html' import Page_macro %}
+{% block title %}后台管理系统{% endblock %}
+{% block content %}
+{{nav.top.render()}}
+<div class="container">
+    {{ form.csrf_token }}
+    <div class="bs-example" data-example-id="hoverable-table">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th class="hidden-xs">大类</th>
+          <th>二级名称</th>
+          <th class="hidden-xs">备注</th>
+          <th></th>
+          <th><button class="btn btn-primary btn-sm" data-toggle="modal"  data-target="#addUserModal" style="float: right;">添加</button></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for data in datas %}
+        <tr>
+          <th scope="row">{{ data.id }}</th>
+            <td class="hidden-xs"><h4>{{ data.major.name }}</h4></td>
+            <td><h4>{{ data.name }}</h4></td>
+            <th style="color: red" class="hidden-xs">{{ data.exegesis }}</th>
+            <a id="name-{{ data.id }}" hidden>{{ data.name }}</a>
+            <a id="exegesis-{{ data.id }}" hidden>{{ data.exegesis }}</a>
+          <td><button type="button" class="btn btn-warning " data-toggle="modal" data-target="#addUserModal" onclick="edit('{{ data.id }}')">修改</button></td>
+          <td>
+              <button type="button" class="btn btn-danger" onclick="user_delete('{{ data.id }}')" id="exampleModal">删除</button>
+              {% if data.disable %}
+              <button type="button" class="btn btn-inverse" onclick="disable('{{ data.id }}')" id="exampleModal-{{ data.id }}">已禁用</button>
+              {% else %}
+                  <button type="button" class="btn btn-success" onclick="disable('{{ data.id }}')" id="exampleModal-{{ data.id }}">禁用</button>
+              {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+    <form method="post" action="" class="form-horizontal" role="form" id="form_data" onsubmit="return check_form()" style="margin: 20px;">
+    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        二级分类
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <label for="remark" class="col-sm-3 control-label">一级分类</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" id="major_id" name="major_id" required="">
+                                    {% for major in major_data %}
+                                        <option value="{{ major.id }}">{{ major.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="user_id" class="col-sm-3 control-label">二级分类</label>
+                            <div class="col-sm-9">
+                                {{ form.name(class="form-control",placeholder="请输入用户ID") }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="remark" class="col-sm-3 control-label">备注</label>
+                            <div class="col-sm-9">
+                                {{ form.exegesis(class="form-control",placeholder="备注",style="height:150px") }}
+                            </div>
+                        </div>
+                        <input id="name_id" name="name_id" value="" hidden>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        提交
+                    </button><span id="tip"> </span>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    </form>
+{{ Page_macro(pagination) }}
+</div>
+<script>
+    function disable(user_id) {
+        if (confirm('禁用你将不能写入后台，请确定要这么做吗？')){
+            let csrf_token = $.trim($('#csrf_token').val());
+            $.ajax({
+                url:"subcategory/disable",
+                data:{'user_id':user_id,'csrf_token':csrf_token},
+                type: "post",
+                dataType:'json',
+                success:function(data)
+                        {
+                            data = data['code']
+                            if(data === '200')
+                            {
+                                document.getElementById("exampleModal-"+user_id).textContent = '已禁用'
+                                document.getElementById("exampleModal-"+user_id).className = 'btn btn-inverse'
+                            }else if (data === '300'){
+                                document.getElementById("exampleModal-"+user_id).textContent = '禁用'
+                                document.getElementById("exampleModal-"+user_id).className = 'btn btn-success'
+                            }
+                            else
+                            {
+                              alert('操作失败');
+                            }
+                        },
+                error:function()
+                        {
+                            alert('请求出错');
+                        },
+
+            })
+        }
+    }
+
+    function user_delete(user_id) {
+        if(confirm('删除您将不能恢复，请确定要这么做吗？')){
+        let csrf_token = $.trim($('#csrf_token').val());
+        $.ajax({
+            url:"subcategory/delete",
+            data:{'user_id':user_id,'csrf_token':csrf_token},
+            type: "post",
+            dataType:'json',
+            success:function(data)
+                    {
+                        data = data['code']
+                        if(data === '200')
+                        {
+                            location.reload();
+                        }
+                        else
+                        {
+                          alert('操作失败');
+                        }
+                    },
+            error:function()
+                    {
+                        alert('请求出错');
+                    },
+
+        })
+    }}
+    function edit(id)
+    {
+        const name = document.getElementById("name-"+id).textContent
+        const exegesis = document.getElementById("exegesis-"+id).textContent
+        document.getElementById("myModalLabel").textContent = '二级分类信息修改';
+        document.getElementById("name").value = name
+        document.getElementById("exegesis").value = exegesis
+        document.getElementById("name_id").value = id
+        document.getElementById("form_data").onsubmit = function() {return get_edit_info()};
+        return false;
+    }
+    // 提交表单
+    function delete_info(id)
+    {
+        if(!id)
+        {
+            alert('Error！');
+            return false;
+        }
+        // var form_data = new Array();
+
+        $.ajax(
+                {
+                    url: "action/user_action.php",
+                    data:{"id":id, "act":"del"},
+                    type: "post",
+                    beforeSend:function()
+                    {
+                        $("#tip").html("<span style='color:blue'>正在处理...</span>");
+                        return true;
+                    },
+                    success:function(data)
+                    {
+                        if(data > 0)
+                        {
+                            alert('操作成功');
+                            $("#tip").html("<span style='color:blueviolet'>恭喜，删除成功！</span>");
+
+                            // document.location.href='world_system_notice.php'
+                             location.reload();
+                        }
+                        else
+                        {
+                            $("#tip").html("<span style='color:red'>失败，请重试</span>");
+                            alert('操作失败');
+                        }
+                    },
+                    error:function()
+                    {
+                        alert('请求出错');
+                    },
+                    complete:function()
+                    {
+                        // $('#tips').hide();
+                    }
+                });
+
+        return false;
+    }
+
+    // 编辑表单
+    function get_edit_info()
+    {
+        const name = $.trim($('#name').val());
+        const exegesis     = $.trim($('#exegesis').val());
+        const csrf_token = $.trim($('#csrf_token').val());
+        const id = document.getElementById("name_id").value
+        const major_id = $('#major_id option:selected').val();
+        $.ajax(
+                {
+                    url: "subcategory/edit",
+                    data:{"name":name, "exegesis":exegesis,"csrf_token":csrf_token,'id':id, 'major_id':major_id},
+                    type: "post",
+                    dataType:'json',
+                    beforeSend:function()
+                    {
+                        $("#tip").html("<span style='color:blue'>正在处理...</span>");
+                        return true;
+                    },
+                    success:function(data)
+                    {
+                        data = data['code']
+                        if(data === '200')
+                        {
+                            var msg = "修改";
+                            $("#tip").html("<span style='color:blueviolet'>恭喜，" +msg+ "成功！</span>");
+                            // document.location.href='system_notice.php'
+                            location.reload();
+                        }
+                        else
+                        {
+                            $("#tip").html("<span style='color:red'>失败，请重试</span>");
+                          //  alert('操作失败');
+                        }
+                    },
+                    error:function()
+                    {
+                        alert('请求出错');
+                    },
+                    complete:function()
+                    {
+                        // $('#tips').hide();
+                    }
+                });
+
+        return false;
+    }
+
+    // 提交表单
+    function check_form()
+    {
+        const name = $.trim($('#name').val());
+        const exegesis = $.trim($('#exegesis').val());
+        const csrf_token = $.trim($('#csrf_token').val());
+        const major_id = $('#major_id option:selected').val();
+
+        if(!name)
+        {
+            alert('名字不能为空！');
+            return false;
+        }
+        if(!major_id)
+        {
+            alert('请先添加一级分类');
+            return false;
+        }
+        // 异步提交数据页面
+        $.ajax(
+                {
+                    url: "subcategory/management",
+                    data:{"name":name,"exegesis":exegesis,"csrf_token":csrf_token,"major_id":major_id},
+                    type: "post",
+                    dataType:'json',
+                    beforeSend:function()
+                    {
+                        $("#tip").html("<span style='color:blue'>正在处理...</span>");
+                        return true;
+                    },
+                    success:function(data)
+                    {
+                        const code = data['code']
+                        if(code === '200')
+                        {
+
+                            var msg = "添加";
+                            $("#tip").html("<span style='color:blueviolet'>恭喜，" +msg+ "成功！</span>");
+                            // document.location.href='system_notice.php'
+                            location.reload();
+                        }
+                        else
+                        {
+                            $("#tip").html("<span style='color:red'>添加失败,请重试</span>");
+                        }
+                    },
+                    error:function()
+                    {
+                        alert('请求出错');
+                    },
+                    complete:function()
+                    {
+                        $('#acting_tips').hide();
+                    }
+                });
+
+        return false;
+    }
+
+    $(function () { $('#addUserModal').on('hide.bs.modal', function () {
+        // 关闭时清空edit状态为add
+        $("#act").val("add");
+        location.reload();
+    })});
+
+</script>
+{% endblock %}

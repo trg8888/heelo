@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% block title %}后台管理系统{% endblock %}
+{% block content %}
+{{nav.top.render()}}
+    {{ form.csrf_token }}
+    <div class="container">
+<label for="basic-url">你的后台地址</label>
+            <button class="btn btn-success" type="button" onclick="Increase()">增加</button>
+        <button class="btn btn-danger" type="button" onclick="Reduce()">减少</button>
+                <div class="btn-group">
+  <button type="button" class="btn btn-default dropdown-toggle" id="account_sz" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    后台账户密码 <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li><a href="#" onclick="Defaultaccount()">默认账户密码</a></li>
+    <li><a href="#" onclick="notaccount()" >自定义账号密码</a></li>
+  </ul>
+<div class="input-group" hidden>
+<input type="text" class="form-control" id="account_name" style="width: 200px;" placeholder="账号" aria-describedby="sizing-addon2" value="manager" disabled>
+<input type="password" class="form-control" id="account_pwd" style="width: 200px;" placeholder="密码" aria-describedby="sizing-addon2" value="WmYEYnPt4CoOAmd7" disabled>
+    <button type="button" id="del_" class="btn btn-success" onclick="return confirm('删除或卸载后您将不能恢复，请确定要这么做吗？');">清除数据</button>
+</div>
+</div>
+<div id="Increase" style="width: 1200px">
+<div class="input-group" id="urld-1" style="width: 300px;float: left;">
+  <span class="input-group-addon" style="width: 10px;" id="basic-addon3">https://</span>
+  <input type="text" style="width: 200px;" class="form-control" id="url-1" aria-describedby="basic-addon3">
+</div>
+</div>
+</div>
+    <div class="container" id="zhenniubi" style="display: none">
+     <hr />
+    <h3>指定大类价格，用英文逗号隔开，如<a style="text-decoration: none;">39,39.99,48.62,48.63,30.91,49,49.99</a></h3>
+    <button class="btn btn-success" type="button" onclick="Specify_add()">增加</button>
+    <button class="btn btn-danger" type="button" onclick="Specify_reduce()">减少</button>
+        <div id="specify">
+        </div>
+    </div>
+
+    <div class="container">
+    <hr/>
+    </div>
+    <div class="container">
+    <h4>选择大类<button class="btn btn-success" type="button" onclick="Big_add()">增加</button><button class="btn btn-danger" type="button" onclick="Big_reduce()">减少</button><input type="checkbox" class="zhenniubi" checked></h4>
+    <div id="Big">
+    </div>
+    </div>
+        <div class="container"><hr/>
+    <center><button type="button" class="btn btn-success btn-lg" onclick="Onekey()">一键配置</button></center>
+            <div class="modal-box" style="float:right">
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-primary show-modal" data-toggle="modal" data-target="#myModal">
+                            配置失败的网站
+                        </button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-body">
+                                    <h3 class="title">配置失败的网站</h3>
+                                    {% if redis_: %}
+                                        {% for data in redis_ %}
+                                            <h4 class="sub-title">{{ data }}</h4>
+                                        {% endfor %}
+                                    {% else %}
+                                        <h4 class="sub-title" style="color: red">请先配置网站</h4>
+                                    {% endif %}
+{#                                         <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>#}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    </div>
+    <div class="modal fade" id="loadingModal">
+    <div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px">
+        <div class="progress progress-striped active" style="margin-bottom: 0;">
+            <div class="progress-bar" style="width: 100%;"></div>
+        </div>
+        <h5>正在加载...</h5>
+        {% for data in data_list %}
+            <h5>{{ data.url }}{{ data.state }}</h5>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+    //显示
+    {% if data_list %}
+    {#$("#loadingModal").modal('show');#}
+    $("#loadingModal").modal({backdrop:'static'});
+    {% else %}  
+    $("#loadingModal").modal('hide');
+    {% endif %}
+    {#//隐藏#}
+    {#$("#loadingModal").modal('hide');#}
+    {#//使点击空白处遮罩层不会消失#}
+    {#$("#loadingModal").modal({backdrop:'static'});#}
+    {#//按Tab键遮罩层不会消失 ，默认值为true#}
+    {#$("#loadingModal").modal({keyboard:false});#}
+
+    //也可以一起运用
+    //backdrop 为 static 时，点击模态对话框的外部区域不会将其关闭。
+    //keyboard 为 false 时，按下 Esc 键不会关闭 Modal。
+    {#$('#loadingModal').modal({backdrop: 'static', keyboard: false});#}
+
+
+    $(".zhenniubi").bootstrapSwitch({
+        onSwitchChange:function(event,state){
+            if(state==true){
+                $('#zhenniubi').attr("style","")
+            }else{
+                $('#zhenniubi').attr("style","display: none")
+            }
+        },onText:"开启",offText:"关闭",state:false
+    });
+      $(".add-1").bootstrapSwitch({onText:"开启",offText:"关闭",onColor:"success",offColor:"danger",setState:"true"});
+      $(function () {
+        url_id = 1;
+        specify_id = 0;
+        Big_id = 0;
+        });
+      function Specify_add() {
+          specify_id += 1
+          $("#specify").append('<div class="col-lg-6" id="specify_id-'+specify_id+'"><div class="input-group"><div class="input-group-btn"><button type="button" class="btn btn-default" data-id="None" id="Specify_name-'+specify_id+'">请选择大类</button><button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu" id="specify_ul">{% for _ in data %}<li><a data-name="{{ _.name }}" data-uid="'+specify_id+'" data-id="{{ _.id }}" onclick="Specify(this)" >{{ _.name }}</a></li>{% endfor %}</ul></div><input type="text" class="form-control specify" aria-label="Text input with segmented button dropdown" id="specify-'+specify_id+'" style="width: 150px;"><input type="text" class="form-control specify" aria-label="Text input with segmented button dropdown" id="specify_int-'+specify_id+'" style="width: 40px;" ><input type="checkbox" class="add-'+specify_id+'" name="my-checkbox" checked></div></div>')
+          let obj = $(".add-"+specify_id);
+          obj.addClass("switch");
+          obj.bootstrapSwitch({onText:"开启",offText:"关闭",onColor:"success",offColor:"danger"});
+      }
+
+      function Big_add() {
+          Big_id += 1
+          $("#Big").append('<div class="col-lg-6" id="Big_id-'+Big_id+'"><div class="input-group"><div class="input-group-btn"><button type="button" class="btn btn-default" data-id="None" id="Big_name-'+Big_id+'">请选择大类</button><button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu" id="Big_ul">{% for _ in data %} <li><a data-name="{{ _.name }}" data-uid="'+Big_id+'" data-id="{{ _.id }}" onclick="category(this)" >{{ _.name }}</a></li>{% endfor %}</ul></div><input type="text" class="form-control specify" aria-label="Text input with segmented button dropdown" id="Big_int-'+Big_id+'" style="width: 40px;" value="2"><input type="checkbox" class="Big_add-'+Big_id+'" checked></div><!-- /.input-group --></div>')
+          let obj = $(".Big_add-"+Big_id);
+          obj.addClass("switch");
+          obj.bootstrapSwitch({onText:"开启",offText:"关闭",onColor:"success",offColor:"danger"});
+      }
+      function Specify_reduce() {
+         $("#specify_id-"+specify_id).remove()
+            if (specify_id < 1){
+                alert('已经到底了')
+            }else{
+                specify_id -= 1
+            }
+      }
+      function Big_reduce() {
+         $("#Big_id-"+Big_id).remove()
+            if (Big_id < 1){
+                alert('已经到底了')
+            }else{
+                Big_id -= 1
+            }
+      }
+      function Specify(data) {
+          let name = data.getAttribute("data-name")
+          let id = data.getAttribute("data-id")
+          let uid = data.getAttribute("data-uid")
+          $('#Specify_name-'+uid).text(name)
+          $('#Specify_name-'+uid).attr('data-id',id)
+      }
+      function category(data) {
+        let name = data.getAttribute("data-name")
+        let id = data.getAttribute("data-id")
+        let uid = data.getAttribute("data-uid")
+        $('#Big_name-'+uid).text(name)
+        $('#Big_name-'+uid).attr('data-id',id)
+      }
+      $("#del_").click(function (){
+          let csrf_token = $("#csrf_token").val()
+            $.ajax({
+            url:'img',
+            type: "post",
+            data:{"csrf_token":csrf_token},
+            dataType:'json',
+            success:function(data)
+            {
+            if(data['code'] === '200')
+                {
+                alert('清除成功')
+                }else if(data['code'] === '404'){
+                alert('已经清除，请勿多次清除')
+                }else {
+                alert('请求出错')
+            }
+            },
+            error:function() {
+                alert('请求出错');},
+            })
+      })
+        function Onekey() {
+            let csrf_token = $("#csrf_token").val()
+            let list_ = []
+            let pwd = $('#account_pwd').val()
+            let name = $('#account_name').val()
+            let data = []
+            let data_zd = []
+            for (let i =1; i<Big_id+1; i++){
+                data.push({'id':$('#Big_name-'+i).attr("data-id"),
+                    'int_id':$('#Big_int-'+i).val(),
+                    'state':$('.Big_add-'+i).is(":checked")})
+            }
+            if ($('.zhenniubi').is(":checked")===true){
+                if (specify_id !== 0){
+                    for (let i =1; i<specify_id+1; i++){
+                        data_zd.push({
+                            'id':$('#Specify_name-'+i).attr("data-id"),
+                            'zhiding':$('#specify-'+i).val(),
+                            'state':$('.add-'+i).is(":checked"),
+                            'int_id':$('#specify_int-'+i).val(),
+                        })
+                    }}
+            }
+            if(url_id=== 0){
+                alert('请先填写地址！！！')
+                return false;
+            }
+            for (let i =1; i<url_id+1; i++){
+                if ($("#url-"+i).val()){
+                    list_.push($("#url-"+i).val())
+                }
+                else {
+                    alert('后台数据不能为空')
+                    return false;
+                }
+            }
+            if (!name || !pwd){
+                alert('请先输入后台账户或者密码')
+                return false;
+            }
+            $.ajax({
+                url:"get",
+                type: "post",
+                contentType: "application/json",
+                headers:{
+                    'X-CSRFToken':csrf_token
+                },
+                data: JSON.stringify({'data_zd':data_zd,'data':data,'name':name,'pwd':pwd, 'list_':list_}),
+                dataType:'json',
+                success:function(data)
+                {
+                if(data['code'] === '200')
+                    {
+                    location.reload();
+                    }else if(data['code'] === '404'){
+                        alert(data['error'])
+                    }else {
+                    alert('请求出错')
+                }
+                },
+                error:function() {
+                    alert('请求出错');},
+            })
+        }
+        function Increase() {
+            url_id += 1
+            $("#Increase").append('<div class="input-group" id="urld-'+url_id+'" style="width: 300px;float: left;"> <span class="input-group-addon" style="width: 10px;" id="basic-addon3">https://</span> <input type="text" style="width: 200px;" class="form-control" id="url-'+url_id+'" aria-describedby="basic-addon3"> </div>')
+        }
+        function Reduce() {
+            $("#urld-"+url_id).remove()
+
+            if (url_id < 1){
+                alert('已经到底了')
+            }else{
+                url_id -= 1
+            }
+        }
+        function Defaultaccount() {
+            $('#account_name').val("manager")
+            $('#account_pwd').val("WmYEYnPt4CoOAmd7")
+            $('#account_sz').text("默认账户密码")
+            if(!$('#account_name').attr("disabled")){
+                $('#account_name').attr('disabled','disabled')
+                $('#account_pwd').attr('disabled','disabled')
+            }
+        }
+        function notaccount() {
+            $('#account_sz').text("自定义账号密码")
+            $('#account_pwd').val("")
+            $('#account_name').val("")
+            $('#account_name').removeAttr('disabled')
+            $('#account_pwd').removeAttr('disabled')
+        }
+    </script>
+{%- endblock scripts %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}后台管理系统{% endblock %}
+{% block styles %}
+    {{ super() }}
+    {{ dropzone.style('border: 2px dashed #0087E7 !important; min-height:400px; width: 400px;margin: auto;') }}
+    <style>
+        .nav_ {
+            margin: auto;
+        }
+        .nav_ tr>td {
+            border-bottom: 4px solid pink;
+            display: inline-block;
+            padding: 16px;
+            background-color: rgb(255, 255, 255);
+        }
+        .right {
+            display: inline-block;
+            background-image: url("{{url_for('static', filename='material/dui.jpg')}}");
+            background-repeat: no-repeat;
+            width: 60px;
+            height: 56px;
+        }
+        .mistaken {
+            display: inline-block;
+            background-image: url("{{url_for('static', filename='material/cuo.jpg')}}");
+            background-repeat: no-repeat;
+            width: 60px;
+            height: 56px;
+        }
+        .nav_ tr>td>em {
+            font-style: normal;
+            color: red;
+        }
+
+    </style>
+{% endblock %}
+{% block content %}
+{{nav.top.render()}}
+    {{ dropzone.create(action='csv.post') }}
+    <table class="nav_">
+    <tr>
+        <td>标题<em>*</em></td>
+        <td>价格</td>
+        <td>属性</td>
+        <td>图片<em>*</em></td>
+        <td>颜色</td>
+        <td>描述<em>*</em></td>
+        <td>ID<em>*</em></td>
+    </tr>
+        <tr>
+        <td class="right"></td>
+        <td class="mistaken"></td>
+        <td class="mistaken"></td>
+        <td class="right"></td>
+        <td class="mistaken"></td>
+        <td class="right"></td>
+        <td class="right"></td>
+    </tr>
+    </table>
+    <a href="{{url_for('static', filename='material/模板.csv')}}" style="margin: 10px 800px">模板下载</a>
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript">
+    $("#myDropzone").append('<input type="text" name="csrf_token" value="{{ csrf_token() }}" hidden>')
+    </script>
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% from 'macors.html' import Page_macro %}
+{% block title %}后台管理系统{% endblock %}
+{% block content %}
+{{nav.top.render()}}
+<div class="container">
+    {{ form.csrf_token }}
+    <div class="bs-example" data-example-id="hoverable-table">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>标题</th>
+          <th class="hidden-xs hidden-md hidden-sm">关键字</th>
+          <th class="hidden-xs hidden-md hidden-sm">描述</th>
+        </tr>
+      <button class="btn btn-primary btn-sm" data-toggle="modal"  data-target="#addUserModal" style="float: right;">添加</button>
+      </thead>
+      <tbody>
+        {% for data in datas %}
+        <tr>
+            <a id="title-{{ data.id }}" hidden>{{ data.title }}</a>
+            <a id="Keyword-{{ data.id }}" hidden>{{ data.Keyword }}</a>
+            <a id="description-{{ data.id }}" hidden>{{ data.description }}</a>
+            <td><h5  class="hidden-xs hidden-md hidden-sm" style="width: 300px;overflow:hidden;text-overflow:ellipsis;white-space: nowrap;">{{ data.title }}</h5><h5  class="visible-xs visible-md visible-sm" style="width: 100px;overflow:hidden;text-overflow:ellipsis;white-space: nowrap;">{{ data.title }}</h5></td>
+            <td><h5  class="hidden-xs hidden-md hidden-sm" style="width: 300px;overflow:hidden;text-overflow:ellipsis;white-space: nowrap;">{{ data.Keyword }}</h5></td>
+            <td><h5  class="hidden-xs hidden-md hidden-sm" style="width: 300px;overflow:hidden;text-overflow:ellipsis;white-space: nowrap;">{{ data.description }}</h5></td>
+            <td><button type="button" class="btn btn-warning " data-toggle="modal" data-target="#addUserModal" onclick="edit('{{ data.id }}')">修改</button></td>
+            <td><button type="button" class="btn btn-danger" onclick="user_delete('{{ data.id }}')" id="exampleModal">删除</button></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+    <form method="post" action="" class="form-horizontal" role="form" id="form_data" onsubmit="return check_form()" style="margin: 20px;">
+    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        CMS页面内容
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <label for="user_id" class="col-sm-3 control-label">标题</label>
+                            <div class="col-sm-9">
+                                {{ form.title(class="form-control",placeholder="请输入用户ID") }}
+                            </div>
+                    </div>
+                        <div class="form-group">
+                            <label for="user_id" class="col-sm-3 control-label">关键字</label>
+                            <div class="col-sm-9">
+                                {{ form.Keyword(class="form-control",placeholder="请输入CMS页面内容", style="height:150px") }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="user_id" class="col-sm-3 control-label">描述</label>
+                            <div class="col-sm-9">
+                                {{ form.description(class="form-control",placeholder="请输入CMS页面内容", style="height:150px") }}
+                            </div>
+                        </div>
+                        <input id="name_id" name="name_id" value="" hidden>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        提交
+                    </button><span id="tip"> </span>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    </form>
+{{ Page_macro(pagination) }}
+</div>
+<script>
+
+    function user_delete(user_id) {
+        if(confirm('删除您将不能恢复，请确定要这么做吗？')){
+        var csrf_token = $.trim($('#csrf_token').val());
+        $.ajax({
+            url:"basicsettings/delete",
+            data:{'user_id':user_id,'csrf_token':csrf_token},
+            type: "post",
+            dataType:'json',
+            success:function(data)
+                    {
+                        data = data['code']
+                        if(data === '200')
+                        {
+                            location.reload();
+                        }
+                        else
+                        {
+                          alert('操作失败');
+                        }
+                    },
+                    error:function()
+                    {
+                        alert('请求出错');
+                    },
+
+        })
+    }}
+    function edit(id)
+    {
+        const title = document.getElementById("title-"+id).textContent
+        const Keyword = document.getElementById("Keyword-"+id).textContent
+        const description = document.getElementById("description-"+id).textContent
+        document.getElementById("myModalLabel").textContent = '基本信息修改';
+        document.getElementById("title").value = title
+        document.getElementById("Keyword").value = Keyword
+        document.getElementById("description").value = description
+        document.getElementById("name_id").value = id
+        document.getElementById("form_data").onsubmit = function() {return get_edit_info()};
+        return false;
+    }
+
+    // 编辑表单
+    function get_edit_info()
+    {
+        var title = $.trim($('#title').val());
+        var Keyword = $.trim($('#Keyword').val());
+        var description = $.trim($('#description').val());
+        var csrf_token = $.trim($('#csrf_token').val());
+        var id = document.getElementById("name_id").value
+        $.ajax(
+                {
+                    url: "basicsettings/edit",
+                    data:{"description":description,"Keyword":Keyword,"title":title,"csrf_token":csrf_token,'id':id},
+                    type: "post",
+                    dataType:'json',
+                    beforeSend:function()
+                    {
+                        $("#tip").html("<span style='color:blue'>正在处理...</span>");
+                        return true;
+                    },
+                    success:function(data)
+                    {
+                        data = data['code']
+                        if(data === '200')
+                        {
+                            var msg = "修改";
+                            $("#tip").html("<span style='color:blueviolet'>恭喜，" +msg+ "成功！</span>");
+                            // document.location.href='system_notice.php'
+                            location.reload();
+                        }
+                        else
+                        {
+                            $("#tip").html("<span style='color:red'>失败，请重试</span>");
+                          //  alert('操作失败');
+                        }
+                    },
+                    error:function()
+                    {
+                        alert('请求出错');
+                    },
+                    complete:function()
+                    {
+                        // $('#tips').hide();
+                    }
+                });
+
+        return false;
+    }
+
+    // 提交表单
+    function check_form()
+    {
+        var title = $.trim($('#title').val());
+        var csrf_token = $.trim($('#csrf_token').val());
+        var Keyword = $.trim($('#Keyword').val());
+        var description = $.trim($('#description').val());
+
+        if(!title)
+        {
+            alert('名字不能为空！');
+            return false;
+        }
+
+        // 异步提交数据页面
+        $.ajax(
+                {
+                    url: "basicsettings/management",
+                    data:{"title":title,"csrf_token":csrf_token,"Keyword":Keyword,"description":description},
+                    type: "post",
+                    dataType:'json',
+                    beforeSend:function()
+                    {
+                        $("#tip").html("<span style='color:blue'>正在处理...</span>");
+                        return true;
+                    },
+                    success:function(data)
+                    {
+                        if(data['code'] === 200)
+                        {
+
+                            var msg = "添加";
+                            $("#tip").html("<span style='color:blueviolet'>恭喜，" +msg+ "成功！</span>");
+                            // document.location.href='system_notice.php'
+                            location.reload();
+                        }
+                        else
+                        {
+                            $("#tip").html("<span style='color:red'>添加失败,请重试</span>");
+                        }
+                    },
+                    error:function()
+                    {
+                        alert('请求出错');
+                    },
+                    complete:function()
+                    {
+                        $('#acting_tips').hide();
+                    }
+                });
+
+        return false;
+    }
+
+    $(function () { $('#addUserModal').on('hide.bs.modal', function () {
+        // 关闭时清空edit状态为add
+        $("#act").val("add");
+        location.reload();
+    })});
+
+</script>
+{% endblock %}

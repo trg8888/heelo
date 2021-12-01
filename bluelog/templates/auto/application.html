@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}后台管理系统{% endblock %}
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+  <!-- ... -->
+</div>
+{% endblock %}
+{% block styles %}
+     {{ super() }}
+    <style type="text/css" >
+        div>a{
+            float: right;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <div class="container">
+    {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endfor %}
+    {% for error in form.errors %}
+        <div class="alert alert-info">{{ form.errors.get(error)[0] }}</div>
+    {% endfor %}
+    <div class="page-header " >
+        <h1>申请账户<small>仅供内部使用</small></h1>
+        <a href="/">--->已有账户，去登陆</a>
+        </br>
+    </div>
+    </div>
+    <form action="/application" method="post">
+    <div class="form-group container input-group-lg">
+    <label for="usr">真实姓名:</label>
+    {{ form.username(class="form-control") }}
+    <label for="usr">手机号:</label>
+    {{ form.phone(class="form-control") }}
+    <label for="email">邮箱账户</label>
+    {{ form.email(class="form-control") }}
+    <label for="pwd">密码:</label>
+    {{ form.password(class="form-control") }}
+    <label for="pwd">确定密码:</label>
+    {{ form.password2(class="form-control") }}
+    </div>
+    <div class="container text-center" >
+    {{ form.submit(class="btn btn-warning btn-lg") }}
+    </div>
+    <div class="form-group container input-group-lg container">
+    {{ form.csrf_token }}
+    </div>
+    </form>
+{% endblock %}

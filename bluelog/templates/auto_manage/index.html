@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}后台管理系统{% endblock %}
+{% block content %}
+{{nav.top.render()}}
+<div class="panel panel-default container">
+  <!-- Default panel contents -->
+  <div class="panel-heading" >系统运行状况</div>
+  <div class="panel-body">
+    <p></p>
+  </div>
+  <ul class="list-group">
+    <li class="list-group-item">大类<a style="color: #d01313;float: right;">{{ major_sql }}</a></li>
+    <li class="list-group-item">小类<a style="color: #d01313;float: right;">{{ subcategory_sql }}</a></li>
+    <li class="list-group-item">数据总数<a style="color: #d01313;float: right;">{{ picture_sql }}</a></li>
+  </ul>
+</div>
+{% endblock %}

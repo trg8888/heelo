@@ -1,0 +1,52 @@
+{% macro Page_macro(pagination,data=None) %}
+    {% if data %}
+        <nav aria-label="Page navigation" style="float: right;">
+  <ul class="pagination">
+    {% if pagination.has_prev %}
+        <li><a href="{{ url_for(request.endpoint, page=pagination.prev_num, sort=request.args.get('sort')) }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+    {% else %}
+         <li class="previous disabled"><a href="#" aria-label="Previous"><span aria-hidden="false">&laquo;</span></a></li>
+    {% endif %}
+    {% for pages in pagination.iter_pages(left_edge=2,left_current=2,right_current=4,right_edge=2) %}
+        {% if pages == pagination.page %}
+            <li class="active"><a href="{{ url_for(request.endpoint, page=pagination.page, sort=request.args.get('sort')) }}">{{ pagination.page }} <span class="sr-only">(current)</span></a></li>
+        {% elif pages == None %}
+            <li class="previous disabled"><a href="#">......</a></li>
+        {% else %}
+            <li><a href="{{ url_for(request.endpoint, page=pages, sort=request.args.get('sort')) }}">{{ pages }}</a></li>
+        {% endif %}
+    {% endfor %}
+      {% if pagination.has_next %}
+        <li><a href="{{ url_for(request.endpoint, page=pagination.next_num, sort=request.args.get('sort')) }}" aria-label="Previous"><span aria-hidden="true">&raquo;</span></a></li>
+    {% else %}
+         <li class="previous disabled"><a href="#" aria-label="Previous"><span aria-hidden="true">&raquo;</span></a></li>
+    {% endif %}
+  </ul>
+</nav>
+    {% else %}
+        <nav aria-label="Page navigation" style="float: right;">
+  <ul class="pagination">
+    {% if pagination.has_prev %}
+        <li><a href="{{ url_for(request.endpoint, page=pagination.prev_num) }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+    {% else %}
+         <li class="previous disabled"><a href="#" aria-label="Previous"><span aria-hidden="false">&laquo;</span></a></li>
+    {% endif %}
+    {% for pages in pagination.iter_pages(left_edge=2,left_current=2,right_current=4,right_edge=2) %}
+        {% if pages == pagination.page %}
+            <li class="active"><a href="{{ url_for(request.endpoint, page=pagination.page) }}">{{ pagination.page }} <span class="sr-only">(current)</span></a></li>
+        {% elif pages == None %}
+            <li class="previous disabled"><a href="#">......</a></li>
+        {% else %}
+            <li><a href="{{ url_for(request.endpoint, page=pages) }}">{{ pages }}</a></li>
+        {% endif %}
+    {% endfor %}
+      {% if pagination.has_next %}
+        <li><a href="{{ url_for(request.endpoint, page=pagination.next_num) }}" aria-label="Previous"><span aria-hidden="true">&raquo;</span></a></li>
+    {% else %}
+         <li class="previous disabled"><a href="#" aria-label="Previous"><span aria-hidden="true">&raquo;</span></a></li>
+    {% endif %}
+  </ul>
+</nav>
+    {% endif %}
+
+{% endmacro %}

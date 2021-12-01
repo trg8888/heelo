@@ -1,0 +1,6 @@
+v_sku,v_name,v_description,v_image,v_url,v_parent_sku,v_date_added,v_status,v_sort_order,v_meta_title,v_meta_keywords,v_meta_description
+jewelry,jewelry,,,,,,1,1,jewelry,jewelry,jewelry
+earrings,earrings,,,,,,1,2,earrings,earrings,earrings
+necklace,necklace,,,,,,1,3,necklace,necklace,necklace
+ring,ring,,,,,,1,4,ring,ring,ring
+Bracelet,Bracelet,,,,,,1,5,Bracelet,Bracelet,Bracelet
